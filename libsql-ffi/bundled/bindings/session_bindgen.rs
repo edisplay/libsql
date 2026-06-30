@@ -4044,6 +4044,9 @@ pub struct libsql_wal_methods {
         ) -> ::std::os::raw::c_int,
     >,
     pub xDb: ::std::option::Option<unsafe extern "C" fn(pWal: *mut wal_impl, db: *mut sqlite3)>,
+    pub xSavepointForget: ::std::option::Option<
+        unsafe extern "C" fn(pWal: *mut wal_impl, aWalData: *mut ::std::os::raw::c_uint),
+    >,
 }
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]

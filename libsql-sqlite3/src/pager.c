@@ -7066,6 +7066,14 @@ int sqlite3PagerSavepoint(Pager *pPager, int op, int iSavepoint){
     nNew = iSavepoint + (( op==SAVEPOINT_RELEASE ) ? 0 : 1);
     for(ii=nNew; ii<pPager->nSavepoint; ii++){
       sqlite3BitvecDestroy(pPager->aSavepoint[ii].pInSavepoint);
+      if( pagerUseWal(pPager)
+       && pPager->wal->methods.iVersion>=2
+       && pPager->wal->methods.xSavepointForget
+      ){
+        pPager->wal->methods.xSavepointForget(
+            pPager->wal->pData, pPager->aSavepoint[ii].aWalData
+        );
+      }
     }
     pPager->nSavepoint = nNew;
 

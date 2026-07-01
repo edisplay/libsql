@@ -3610,6 +3610,15 @@ static int sqlite3WalSavepointUndo(Wal *pWal, u32 *aWalData){
 }
 
 /*
+** Forget a WAL savepoint context that SQLite has destroyed. The built-in WAL
+** implementation does not retain any external state per savepoint.
+*/
+static void sqlite3WalSavepointForget(Wal *pWal, u32 *aWalData){
+  UNUSED_PARAMETER(pWal);
+  UNUSED_PARAMETER(aWalData);
+}
+
+/*
 ** This function is called just before writing a set of frames to the log
 ** file (see sqlite3WalFrames()). It checks to see if, instead of appending
 ** to the current log file, it is possible to overwrite the start of the
@@ -4562,7 +4571,7 @@ static int sqlite3WalOpen(
     }
 
     out->pData = (wal_impl*) pRet;
-    out->methods.iVersion = 1;
+    out->methods.iVersion = 2;
     out->methods.xLimit = (void (*)(wal_impl *, long long))sqlite3WalLimit;
     out->methods.xBeginReadTransaction = (int (*)(wal_impl *, int *))sqlite3WalBeginReadTransaction;
     out->methods.xEndReadTransaction = (void (*)(wal_impl *))sqlite3WalEndReadTransaction;
@@ -4599,6 +4608,7 @@ static int sqlite3WalOpen(
     outWal->methods.xWriteLock = sqlite3WalWriteLock;
 #endif
     out->methods.xDb = (void (*)(wal_impl *, sqlite3 *))sqlite3WalDb;
+    out->methods.xSavepointForget = (void (*)(wal_impl *, unsigned int *))sqlite3WalSavepointForget;
 
     WALTRACE(("WAL%d: opened\n", pRet));
   }
